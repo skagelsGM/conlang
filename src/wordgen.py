@@ -4,7 +4,9 @@ import getopt
 import os.path
 from random import randint
 import yaml
+from com.kagels.util.validators import Validator, BooleanValidator, StringValidator, IntegerValidator
 from com.kagels.util import logger
+from wordgenconfig import Config
 
 '''
 Word Gen Config:
@@ -36,7 +38,7 @@ MAX_SYLLABLES_IN_WORD = 4
 # """
 
 '''
-TODO: Generate word based on phontactics for the language
+TODO: Generate word based on phonopytactics for the language
 '''
 def generate_word(cset, vset, syllable_count = 0, language = '', phonotactics = 'CV'):
     if syllable_count == 0:
@@ -44,27 +46,23 @@ def generate_word(cset, vset, syllable_count = 0, language = '', phonotactics = 
 
     logger.debug(APP, "Generating %s Word with %s syllables\nphonotactics: %s ..." % (language, syllable_count, phonotactics))
 
-    word = []
-    for s in range(syllable_count):
-        syllable = generate_syllable(cset, vset, phonotactics)
-        # logger.debug(APP,"Syllable index: %s, %s" % (s, syllable))
-        word.append(syllable)
-
+    word = [generate_syllable(cset, vset, phonotactics) for _ in range(syllable_count)]
     return ''.join(word)
 
-def generate_syllable(cset, vset, phonotactics):
-    syllable = []
-    for ltr in list(phonotactics):
-        logger.debug(APP, "[generate_syllable] Phonotactic: %s" % (ltr))
-        if ltr == 'C':
-            syllable.append(generate_consonant(cset))
-        elif ltr == 'V':
-            syllable.append(generate_vowel(vset))
-        else:
-            logger.debug(APP, "Unrecognized phonotactic!!!")
+def generate_word_from_sets(set_dict, syllable_count = 0, language = '', phonotactics = 'CV'):
+    if syllable_count == 0:
+        syllable_count = randint(1, MAX_SYLLABLES_IN_WORD)
 
-    # logger.info(APP, syllable
-    return ''.join(syllable)
+    logger.debug(APP, f"Generating {language} Word with {syllable_count} syllables\nphonotactics: {phonotactics} ...")
+
+    word = [create_syllable_from_sets(set_dict, phonotactics) for _ in range(syllable_count)]
+    return ''.join(word)
+
+def generate_phono_from_set(set):
+    v = randint(0, len(set)-1)
+    phono = set[v]
+    logger.debug(APP, "set index: %s, phono: %s" % (v, phono))
+    return phono
 
 def generate_consonant(cset):
     c = randint(0, len(cset)-1)
@@ -77,6 +75,37 @@ def generate_vowel(vset):
     vowel = vset[v]
     logger.debug(APP, "vowel index: %s, vowel: %s" % (v, vowel))
     return vowel
+
+def generate_unrecognized(dummy_arg=None):
+    ''' dummy_arg is just to make the function signature consistent with the other generate functions '''
+    logger.debug(APP, "Unrecognized phonotactic!!!")
+    return ''
+
+SYLLABLE_GEN_KEYS = ['C', 'V'] # 'T', 'N
+SYLLABLE_GEN_FUNC = {
+    'C': generate_consonant,
+    'V': generate_vowel
+} #   'T': ? , 'N': ? )
+
+def get_syllable_set(ltr, set_dict):
+    return set_dict[ltr] if ltr in set_dict.keys() else None
+
+def get_syllable_func(ltr, func_dict=SYLLABLE_GEN_FUNC):
+    return func_dict[ltr] if ltr in func_dict.keys() else generate_unrecognized
+
+def exec_syllable_func(ltr, set_dict, func_dict=SYLLABLE_GEN_FUNC):
+    set = get_syllable_set(ltr, set_dict)
+    gen_func = get_syllable_func(ltr, func_dict)
+    return gen_func(set)
+
+def generate_syllable(cset, vset, phonotactics):
+    set_dict = { 'C': cset, 'V': vset }
+    return create_syllable_from_sets(set_dict, phonotactics)
+    
+def create_syllable_from_sets(set_dict, phonotactics):    
+    syllable = list( map(lambda l: exec_syllable_func(l, set_dict), list(phonotactics) ))                
+    # logger.info(APP, syllable)
+    return ''.join(syllable)
 
 def print_header(word_count, syllable_count, config):
     print('---')
@@ -95,14 +124,20 @@ def print_results(words):
     print('---')
 
 def load_config_from_file(config_file):
+    logger.info(APP, f"Loading configuration from {config_file}")
     with open(config_file, 'r') as stream:
         try:
-            return yaml.load(stream, Loader=yaml.FullLoader)
+            config_yaml = yaml.load(stream, Loader=yaml.FullLoader)
+            phonotactics = config_yaml.get('phonotactics') if isinstance(config_yaml, dict) else None
+            if isinstance(phonotactics, dict) and {'language', 'structure', 'sets'} <= set(phonotactics.keys()):
+                return Config(config_yaml)
+            return config_yaml
         except yaml.YAMLError as exc:
             logger.error(APP, exc)
+            raise
 
 def usage():
-    print("wordgen.py -psw --phonotactics= --syllable-count= --word-count= --config=")
+    print("wordgen.py -pswc --phonotactics= --syllable-count= --word-count= --config=")
 
 #------------------------------------------------
 # main
@@ -116,7 +151,7 @@ if __name__ == '__main__':
         usage()
         sys.exit(2)
 
-    config_file='proto-testa-mundi.properties'
+    config_file='proto-testa-mundi.v1.yaml'
     phonotactics = None
     word_count = 1
     syllable_count = 1
@@ -125,22 +160,23 @@ if __name__ == '__main__':
             usage()
             sys.exit()
         elif o in ("-c", "--config"):
-            config_file= a
+            config_file = a
         elif o in ("-p", "--phonotactics"):
             phonotactics = a
         elif o in ("-s", "--syllable-count"):
             syllable_count = int(a)
-        elif o in ("-w", "--word-cound"):
+        elif o in ("-w", "--word-count"):
             word_count = int(a)
         else:
             assert False, "unhandled option"
+    
     # ...
     # word_count = int(sys.argv[1]) if len(sys.argv) >= 2 else 1
     # syllable_count = int(sys.argv[2]) if len(sys.argv) >= 3 else 0
 
     # load config
+    # logger.debug(APP, f"Loading configuration from {PROTO_TESTA_MUNDI_CONFIG}")
     # config = yaml.load(PROTO_TESTA_MUNDI_CONFIG, Loader=yaml.FullLoader)
-    logger.debug(APP, "Loading configuration from %s" % config_file)
     config = load_config_from_file(config_file)
 
     if phonotactics is not None:
@@ -148,12 +184,14 @@ if __name__ == '__main__':
 
     print_header(word_count, syllable_count, config)
 
-    # TODO: Customize phonotactic classes and their character sets instead of hard-coding for C and V. User should be able to defin any class and its set of characters.
+    # TODO: Customize phonotactic classes and their character sets instead of hard-coding for C and V. User should be able to define any class and its set of characters.
+    #  - To build the set dict, we can iterate through the phonotactic string and add any classes we encounter to the set dict with their corresponding character sets from the config. This way we can support any number of classes and not just C and V.
+    # build set dict from config
+    set_dict = { 'C': config['cset'], 'V': config['vset'] }
+    # logger.debug(APP, f"set_dict: {set_dict}")   
 
     # generate words
-    words = []
-    for x in range(word_count):
-        word = generate_word(config['cset'], config['vset'], syllable_count, config['language'], config['phonotactics'])
-        words.append(word)
+    # words = [ generate_word(config['cset'], config['vset'], syllable_count, config['language'], config['phonotactics']) for _ in range(word_count)]
+    words = [ generate_word_from_sets(set_dict, syllable_count=syllable_count, language=config['language'], phonotactics=config['phonotactics']) for _ in range(word_count)]
 
     print_results(words)

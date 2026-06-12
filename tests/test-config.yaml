@@ -1,0 +1,18 @@
+phonotactics:
+  language: Serdex
+  sets:
+    C:
+    - p
+    - t
+    - k
+    - q
+    - th
+    N: []
+    T: []
+    V:
+    - a
+    - e
+    - i
+    - o
+    - u
+  structure: CVC

@@ -4,3 +4,7 @@ cset: [ "p","t","k","q","th","v","s","z","sh","zh","ch","x","h","pf","ts","m","n
 vset: ["i","e","a","o","u"]
 tset: []
 nset: []
+C: [ "p","t","k","q","th","v","s","z","sh","zh","ch","x","h","pf","ts","m","n","ng","w","l","y" ]
+V: ["i","e","a","o","u"]
+T: []
+N: []

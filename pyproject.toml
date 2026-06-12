@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "conlang"
+version = "0.1.0"
+description = "Conlang Tools"
+requires-python = ">=3.13"
+authors = [
+    {name = "Scott", email = "skagels@gmail.com"},
+    {name = "Max", email = "max.kagels@icloud.com"}
+]
+dependencies = ["python-utils"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=3.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["*_test.py", "test_*.py"]
