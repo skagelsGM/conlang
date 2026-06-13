@@ -2,7 +2,7 @@
 # import sys
 # import os.path
 # from random import randint
-import yaml
+# import yaml
 # from com.kagels.util import logger
 
 # As shown in proto-testa-mundi.v2.yaml, the phonotactics config has been updated to include a 'sets' section that defines the character sets for each class (C, V, T, N). The Phonotactics class has been updated to reflect this new structure. The generate_word_from_sets function in wordgen.py has been updated to take a set_dict argument that contains the character sets for each class, and it uses this set_dict to generate syllables based on the phonotactic structure defined in the config. The main function in wordgen.py has been updated to build the set_dict from the config and pass it to the generate_word_from_sets function when generating words.

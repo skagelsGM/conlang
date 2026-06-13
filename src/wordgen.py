@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import getopt
-import os.path
+# import os.path
 from random import randint
 import yaml
 from com.kagels.util.validators import Validator, BooleanValidator, StringValidator, IntegerValidator
