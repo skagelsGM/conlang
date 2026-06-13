@@ -24,11 +24,17 @@ class Config:
     def load_config__from_yaml(self, yaml):
         return Config(yaml)
 
-    def __init__(self, yml):
-        self.phonotactics = Phonotactics.load_from_yaml(yml['phonotactics'])
+    def __init__(self, yaml):
+        self.phonotactics = Phonotactics.load_from_yaml(yaml['phonotactics'])
 
-    def get_language(self):
-        return self.phonotactics.language
-    
+    def get_language(self) -> str:
+        return str(self.phonotactics.language)
+
+    def get_phonotactic_structure(self) -> str:
+        return str(self.phonotactics.structure)
+
+    def get_charsets(self) -> dict:
+        return self.phonotactics.charsets
+
     def yaml(self):
         return { 'phonotactics': self.phonotactics.yaml() }

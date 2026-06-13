@@ -9,18 +9,16 @@ import yaml
 # phonotactics:
 #   language: "Proto Testa Mundi"
 #   structure: "CVC"
-#   sets: 
+#   charsets:
 #     C: [ "p","t","k","q","th","v","s","z","sh","zh","ch","x","h","pf","ts","m","n","ng","w","l","y" ]
 #     V: ["i","e","a","o","u"]
 #     T: []
 #     N: []
-
-
 class Phonotactics:
-    def __init__(self, language=None, structure=None, sets=None, yml=None):
-        self.language  = language  if language  else yml['language']  if yml else None
-        self.structure = structure if structure else yml['structure'] if yml else None
-        self.sets      = sets      if sets      else yml['sets']      if yml else None
+    def __init__(self, language=None, structure=None, charsets:dict={}, yml:dict={}):
+        self.language  = language  or yml['language']  or None
+        self.structure = structure or yml['structure'] or None
+        self.charsets  = charsets  or yml['charsets']  or {}
         self._yml_dict = yml
 
     @classmethod
@@ -28,15 +26,18 @@ class Phonotactics:
         return Phonotactics(
             language=yml['language'],
             structure=yml['structure'],
-            sets=yml['sets'],
+            charsets=yml['charsets'],
             yml=yml
         )
         
+    def get_charset(self, charset_key:str):
+        return self.charsets[charset_key] if self.charsets else None
+
     def update_yml_dict(self):
         self._yml_dict = {
             'language': self.language,
             'structure': self.structure,
-            'sets': self.sets
+            'charsets': self.charsets
         }
         return self._yml_dict
                     

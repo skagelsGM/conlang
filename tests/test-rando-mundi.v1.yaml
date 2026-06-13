@@ -1,0 +1,7 @@
+version: "v1"
+language: "Test Rando Mundi"
+phonotactics: "CVNT"
+C: [ "p","k","q","v","s","z","sh","x","h","pf","ts","w","l","y" ]
+V: ["i","e","a","o","u"]
+T: ["t", "th","zh","ch"]
+N: ["m","n","ng"]

@@ -1,4 +1,4 @@
-
+#!/bin/bash
 alias conlang-venv-create='python3.13 -m venv .venv-py313'
 alias conlang-venv-activate='source .venv-py313/bin/activate'
 alias conlang-setenv="export PYTHONPATH=./src:$PYTHONPATH"

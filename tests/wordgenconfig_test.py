@@ -1,5 +1,4 @@
 import pytest
-
 import yaml
 
 from wordgenconfig import Config
@@ -23,41 +22,66 @@ def test_wordgenconfig_hello():
 #   T: []
 #   N: []
 def test_wordgenconfig_load_config_v1():   
+    language = "Proto Testa Mundi"
+    phonotactics = "CVC"
+    cset = [ "p","t","k","q","th","v","s","z","sh","zh","ch","x","h","pf","ts","m","n","ng","w","l","y" ]
+    vset = ["i","e","a","o","u"]
+
     config = load_config_from_file('./proto-testa-mundi.v1.yaml')
     print(config['phonotactics'])
-    assert config['language'] == "Proto Testa Mundi"
-    assert config['phonotactics'] == "CVC"
-    assert config['cset'] == [ "p","t","k","q","th","v","s","z","sh","zh","ch","x","h","pf","ts","m","n","ng","w","l","y" ]
-    assert config['vset'] == ["i","e","a","o","u"]
-    assert config['tset'] == []
-    assert config['nset'] == []
-    assert config['C'] == [ "p","t","k","q","th","v","s","z","sh","zh","ch","x","h","pf","ts","m","n","ng","w","l","y" ]
-    assert config['V'] == ["i","e","a","o","u"]
+    assert config['language'] == language
+    assert config['phonotactics'] == phonotactics
+    assert config['C'] == cset
+    assert config['V'] == vset
     assert config['T'] == []
     assert config['N'] == []  
+
+def test_wordgen_v1_mixed_charsets():
+    language = "Test Rando Mundi"
+    phonotactics = "CVNT"
+    cset = [ "p","k","q","v","s","z","sh","x","h","pf","ts","w","l","y" ]
+    vset = ["i","e","a","o","u"]
+    tset = ["t", "th","zh","ch"]
+    nset = ["m","n","ng"]
+    config = load_config_from_file('./tests/test-rando-mundi.v1.yaml')
+    print(config['phonotactics'])
+    assert config['language'] == language
+    assert config['phonotactics'] == phonotactics
+    assert config['C'] == cset
+    assert config['V'] == vset
+    assert config['T'] == tset
+    assert config['N'] == nset
     
-def test_wordgenconfig_load_config_v2():   
+def test_wordgenconfig_load_config_v2():
+    language = "Proto Testa Mundi"
+    structure = "CVC"
+    cset = [ "p","t","k","q","th","v","s","z","sh","zh","ch","x","h","pf","ts","m","n","ng","w","l","y" ]
+    vset = ["i","e","a","o","u"]
     config = Config.load_config_from_file('./proto-testa-mundi.v2.yaml')
     print(config.phonotactics)
-    assert config.phonotactics.language == "Proto Testa Mundi"
-    assert config.phonotactics.structure == "CVC"
-    assert config.phonotactics.sets['C'] == [ "p","t","k","q","th","v","s","z","sh","zh","ch","x","h","pf","ts","m","n","ng","w","l","y" ]
-    assert config.phonotactics.sets['V'] == ["i","e","a","o","u"]
-    assert config.phonotactics.sets['T'] == []
-    assert config.phonotactics.sets['N'] == []
+    assert config.phonotactics.language == language
+    assert config.phonotactics.structure == structure
+    assert config.phonotactics.charsets['C'] == cset
+    assert config.phonotactics.charsets['V'] == vset
+    assert config.phonotactics.charsets['T'] == []
+    assert config.phonotactics.charsets['N'] == []
+    assert config.phonotactics.get_charset('C') == cset
+    assert config.phonotactics.get_charset('V') == vset
+    assert config.phonotactics.get_charset('T') == []
+    assert config.phonotactics.get_charset('N') == []
     
 def test_wordgenconfig_v2_serdex():
     ### Test Setup
-    #   1. build config
+    # 1. build test config
     language = "Serdex"
     structure = "CVC"
     cset = [ "p","t","k","q","th" ]
     vset = ["a","e","i","o","u"]
-    wordgen_config = Config( yml = {
+    wordgen_config = Config( yaml = {
         'phonotactics': {
             'language': language,
             'structure': structure,
-            'sets': {
+            'charsets': {
                 'C': cset,
                 'V': vset,
                 'T': [],
@@ -66,18 +90,26 @@ def test_wordgenconfig_v2_serdex():
         }
     })
     
-    #  2. dump to file
+    # 2. dump to yaml file
     config_file = './tests/test-config.yaml'
     with open(config_file, 'w') as file:
         yaml.dump(wordgen_config.yaml(), file)
+
+    # 3. load test config from file
+    config = Config.load_config_from_file(config_file)
+
+    ### Assert loaded config is same as original test config
     
-    #  3. Assert config loaded from file matches original config
-    config = load_config_from_file(config_file)
+    # 4. Assert config loaded from file matches original config
     print(config.phonotactics)
     assert config.phonotactics.language == language
     assert config.phonotactics.structure == structure
-    assert config.phonotactics.sets['C'] == cset
-    assert config.phonotactics.sets['V'] == vset
-    assert config.phonotactics.sets['T'] == []
-    assert config.phonotactics.sets['N'] == []
+    assert config.phonotactics.charsets['C'] == cset
+    assert config.phonotactics.charsets['V'] == vset
+    assert config.phonotactics.charsets['T'] == []
+    assert config.phonotactics.charsets['N'] == []
+    assert config.phonotactics.get_charset('C') == cset
+    assert config.phonotactics.get_charset('V') == vset
+    assert config.phonotactics.get_charset('T') == []
+    assert config.phonotactics.get_charset('N') == []
 
